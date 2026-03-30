@@ -1,0 +1,6 @@
+node_modules
+.env
+public/tickets/*.png
+generated
+dist
+*.log

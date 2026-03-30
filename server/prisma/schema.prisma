@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+enum Role {
+  ADMIN
+  PLANNER
+  ATTENDEE
+}
+
+enum EventStatus {
+  PENDING
+  APPROVED
+  ARCHIVED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+}
+
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  name           String?
+  role           Role           @default(ATTENDEE)
+  image          String?
+  emailVerified  Boolean        @default(false)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  
+  accounts       Account[]
+  sessions       Session[]
+  events         Event[]        @relation("CreatedEvents")
+  bookings       Booking[]
+  notifications  Notification[]
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?   @db.Text
+  refreshToken          String?   @db.Text
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  idToken               String?   @db.Text
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id          String      @id @default(cuid())
+  title       String
+  description String      @db.Text
+  date        DateTime
+  location    String
+  status      EventStatus @default(PENDING)
+  image       String?
+  
+  creatorId   String
+  creator     User        @relation("CreatedEvents", fields: [creatorId], references: [id])
+
+  tickets     Ticket[]
+  bookings    Booking[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model Ticket {
+  id           String   @id @default(cuid())
+  type         String   // e.g., Regular, VIP
+  price        Decimal  @db.Decimal(10, 2)
+  quantity     Int      // Total tickets available
+  sold         Int      @default(0)
+  
+  eventId      String
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  bookings     Booking[]
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  reference     String        @unique // Payment reference
+  amount        Decimal       @db.Decimal(10, 2)
+  quantity      Int           @default(1)
+  status        PaymentStatus @default(PENDING)
+  gateway       String        // Paystack or Mpesa
+  checkoutRequestId String?   @unique // For Mpesa tracking
+  qrCode        String?       @db.Text // Reference to generated PNG/QR
+  
+  attendeeId    String
+  attendee      User          @relation(fields: [attendeeId], references: [id])
+  
+  eventId       String
+  event         Event         @relation(fields: [eventId], references: [id])
+  
+  ticketId      String
+  ticket        Ticket        @relation(fields: [ticketId], references: [id])
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  type        String   // EMAIL, IN_APP
+  title       String
+  message     String   @db.Text
+  isRead      Boolean  @default(false)
+  
+  recipientId String
+  recipient   User     @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String    @db.Text
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+}
