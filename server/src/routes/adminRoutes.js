@@ -27,6 +27,7 @@ router.delete('/events/:id', adminController.deleteEvent);
 router.get('/payments', adminController.getAllPayments);
 router.get('/tickets', adminController.getAllTickets);
 router.post('/tickets', adminController.createTicket);
+router.post('/tickets/issue', adminController.issueTicket);
 
 // Communications
 router.post('/broadcast', adminController.broadcastEmail);

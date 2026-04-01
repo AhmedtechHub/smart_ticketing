@@ -61,21 +61,25 @@ const bookingService = {
       }
     });
 
-    // Send Confirmation Email with Ticket
-    await sendEmail({
-      to: booking.attendee.email,
-      subject: `Your Ticket for ${booking.event.title}`,
-      title: "Booking Confirmed!",
-      htmlContent: `<p>Hello <b>${booking.attendee.name || 'there'}</b>,</p><p>Your booking for <b>${booking.event.title}</b> is confirmed. Download your ticket below.</p>`,
-      buttonText: "View Event Details",
-      buttonUrl: `${process.env.CLIENT_URL}/events/${booking.eventId}`,
-      attachments: [
-        {
-          filename: `Ticket_${booking.reference}.png`,
-          path: path.join(__dirname, '../../public', ticketUrl)
-        }
-      ]
-    });
+    // Send Confirmation Email with Ticket (Graceful failure)
+    try {
+      await sendEmail({
+        to: booking.attendee.email,
+        subject: `Your Ticket for ${booking.event.title}`,
+        title: "Booking Confirmed!",
+        htmlContent: `<p>Hello <b>${booking.attendee.name || 'there'}</b>,</p><p>Your booking for <b>${booking.event.title}</b> is confirmed. Download your ticket below.</p>`,
+        buttonText: "View Event Details",
+        buttonUrl: `${process.env.CLIENT_URL}/events/${booking.eventId}`,
+        attachments: [
+          {
+            filename: `Ticket_${booking.reference}.png`,
+            path: path.join(__dirname, '../../public', ticketUrl)
+          }
+        ]
+      });
+    } catch (mailErr) {
+      console.error("Booking Confirmation Email Error:", mailErr.message);
+    }
 
     return updatedBooking;
   }

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import * as htmlToImage from "html-to-image";
 import PageShell from "../Components/PageShell";
 import { adminApi } from "@/api/adminApi";
 import { 
@@ -62,7 +63,9 @@ const TicketGeneratorPage = () => {
 
     const availableTiers = tickets.filter(t => t.eventId === selectedEventId);
 
-    const handlePrint = () => {
+    const [isIssuing, setIsIssuing] = useState(false);
+
+    const handlePrint = async () => {
         if (!activeEvent || !activeTicket) {
             return toast({
                 variant: "destructive",
@@ -70,7 +73,37 @@ const TicketGeneratorPage = () => {
                 description: "Select an Event and Ticket Category to print.",
             });
         }
-        window.print();
+
+        if (ticketRef.current && !isIssuing) {
+            setIsIssuing(true);
+            try {
+                const base64Image = await htmlToImage.toPng(ticketRef.current, { pixelRatio: 2 });
+
+                await adminApi.issueTicket({
+                    eventId: selectedEventId,
+                    ticketId: selectedTicketId,
+                    attendeeName,
+                    attendeeEmail,
+                    image: base64Image
+                });
+
+                toast({
+                    title: "Ticket Issued Successfully!",
+                    description: "Inventory deducted and email dispatched to attendee.",
+                });
+
+                window.print();
+            } catch (err: any) {
+                console.error("Failed to process ticket:", err);
+                toast({
+                    variant: "destructive",
+                    title: "Processing Failed",
+                    description: err.response?.data?.error || "Could not issue ticket properly. Try again.",
+                });
+            } finally {
+                setIsIssuing(false);
+            }
+        }
     };
 
     // QR payload can be a verifiable dummy link or unique payload JSON
@@ -87,7 +120,7 @@ const TicketGeneratorPage = () => {
             description="Manually issue, generate and export sleek verifiable physical tickets."
             icon={ImageIcon}
         >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4 print:block print:m-0">
                 
                 {/* Configuration Panel */}
                 <div className="lg:col-span-4 space-y-6">
@@ -157,18 +190,18 @@ const TicketGeneratorPage = () => {
                         </div>
 
                         <div className="mt-8 grid grid-cols-2 gap-3">
-                             <Button onClick={handlePrint} variant="outline" className="h-12 w-full rounded-xl gap-2 font-bold hover:bg-muted/50 border-border">
-                                 <Printer className="w-4 h-4 text-primary" /> Print
+                             <Button onClick={handlePrint} disabled={isIssuing} variant="outline" className="h-12 w-full rounded-xl gap-2 font-bold hover:bg-muted/50 border-border">
+                                 <Printer className="w-4 h-4 text-primary" /> {isIssuing ? "Processing..." : "Print"}
                              </Button>
-                             <Button onClick={handlePrint} className="h-12 w-full rounded-xl gap-2 font-bold shadow-lg shadow-primary/20">
-                                 <Download className="w-4 h-4" /> Export image
+                             <Button onClick={handlePrint} disabled={isIssuing} className="h-12 w-full rounded-xl gap-2 font-bold shadow-lg shadow-primary/20">
+                                 <Download className="w-4 h-4" /> {isIssuing ? "Processing..." : "Export image"}
                              </Button>
                         </div>
                     </div>
                 </div>
 
                 {/* Live Preview Panel */}
-                <div className="lg:col-span-8">
+                <div className="lg:col-span-8 print:w-full print:m-0 print:p-0">
                     <div className="bg-card/40 rounded-3xl border border-dashed border-border/60 p-8 flex items-center justify-center min-h-[500px] relative overflow-hidden backdrop-blur-sm print:border-none print:p-0 print:bg-transparent">
                         
                         {!activeEvent || !activeTicket ? (

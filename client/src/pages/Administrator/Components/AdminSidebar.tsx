@@ -1,5 +1,7 @@
+import { useState, useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { authClient } from "@/api/apiConfig";
+import { adminApi } from "@/api/adminApi";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -36,65 +38,81 @@ interface SidebarProps {
   setCollapsed: (collapsed: boolean) => void;
 }
 
-const navigation = [
-  {
-    title: "Overview",
-    items: [
-      { name: "Dashboard", icon: LayoutDashboard, href: "/admin", exact: true, badge: null },
-      { name: "Analytics",  icon: BarChart3,       href: "/admin/analytics",         badge: "Beta" },
-    ],
-  },
-  {
-    title: "Event Management",
-    items: [
-      { name: "All Events",        icon: CalendarCheck, href: "/admin/events",          badge: null },
-      { name: "Pending Approvals", icon: Sparkles,      href: "/admin/approvals",       badge: "12" },
-      { name: "Archived Events",   icon: Archive,       href: "/admin/events/archived", badge: null },
-      { name: "Schedule Manager",  icon: Clock,         href: "/admin/schedule",        badge: null },
-    ],
-  },
-  {
-    title: "Ticket Management",
-    items: [
-      { name: "All Tickets",      icon: Ticket, href: "/admin/tickets",          badge: null  },
-      { name: "Ticket Generator", icon: Image,  href: "/admin/tickets/generate", badge: "PNG" },
-      { name: "Ticket Gallery",   icon: Image,  href: "/admin/tickets/gallery",  badge: null  },
-    ],
-  },
-  {
-    title: "User Management",
-    items: [
-      { name: "All Users",      icon: Users,  href: "/admin/users",          badge: null  },
-    ],
-  },
-  {
-    title: "Payments",
-    items: [
-      { name: "All Transactions", icon: CreditCard, href: "/admin/payments",               badge: null },
-      { name: "Disbursements",    icon: CreditCard, href: "/admin/payments/disbursements",  badge: null },
-    ],
-  },
-  {
-    title: "Communications",
-    items: [
-      { name: "Notifications", icon: Bell,          href: "/admin/notifications", badge: "3" },
-      { name: "Broadcast",     icon: Mail,          href: "/admin/broadcast",     badge: null },
-      { name: "Messages",      icon: MessageSquare, href: "/admin/messages",      badge: null },
-    ],
-  },
-  {
-    title: "Settings",
-    items: [
-      { name: "System Settings", icon: Settings, href: "/admin/settings", badge: null },
-    ],
-  },
-];
-
 const AdminSidebar = ({ collapsed, setCollapsed }: SidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { data: session } = authClient.useSession();
   
+  const [pendingApprovals, setPendingApprovals] = useState<number | null>(null);
+
+  useEffect(() => {
+    const fetchPending = async () => {
+      try {
+        const data = await adminApi.getAnalytics();
+        setPendingApprovals(data.pendingEvents);
+      } catch (err) {
+        console.error("Failed to fetch pending events:", err);
+      }
+    };
+    fetchPending();
+    const interval = setInterval(fetchPending, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const navigation = [
+    {
+      title: "Overview",
+      items: [
+        { name: "Dashboard", icon: LayoutDashboard, href: "/admin", exact: true, badge: null },
+        { name: "Analytics",  icon: BarChart3,       href: "/admin/analytics",         badge: "Beta" },
+      ],
+    },
+    {
+      title: "Event Management",
+      items: [
+        { name: "All Events",        icon: CalendarCheck, href: "/admin/events",          badge: null },
+        { name: "Pending Approvals", icon: Sparkles,      href: "/admin/approvals",       badge: pendingApprovals && pendingApprovals > 0 ? pendingApprovals.toString() : null },
+        { name: "Archived Events",   icon: Archive,       href: "/admin/events/archived", badge: null },
+        { name: "Schedule Manager",  icon: Clock,         href: "/admin/schedule",        badge: null },
+      ],
+    },
+    {
+      title: "Ticket Management",
+      items: [
+        { name: "All Tickets",      icon: Ticket, href: "/admin/tickets",          badge: null  },
+        { name: "Ticket Generator", icon: Image,  href: "/admin/tickets/generate", badge: "PNG" },
+        { name: "Ticket Gallery",   icon: Image,  href: "/admin/tickets/gallery",  badge: null  },
+      ],
+    },
+    {
+      title: "User Management",
+      items: [
+        { name: "All Users",      icon: Users,  href: "/admin/users",          badge: null  },
+      ],
+    },
+    {
+      title: "Payments",
+      items: [
+        { name: "All Transactions", icon: CreditCard, href: "/admin/payments",               badge: null },
+        { name: "Disbursements",    icon: CreditCard, href: "/admin/payments/disbursements",  badge: null },
+      ],
+    },
+    {
+      title: "Communications",
+      items: [
+        { name: "Notifications", icon: Bell,          href: "/admin/notifications", badge: "3" },
+        { name: "Broadcast",     icon: Mail,          href: "/admin/broadcast",     badge: null },
+        { name: "Messages",      icon: MessageSquare, href: "/admin/messages",      badge: null },
+      ],
+    },
+    {
+      title: "Settings",
+      items: [
+        { name: "System Settings", icon: Settings, href: "/admin/settings", badge: null },
+      ],
+    },
+  ];
+
   const user = session?.user;
   const adminName = user?.name || "System Admin";
   const adminEmail = user?.email || "admin@smarttick.io";

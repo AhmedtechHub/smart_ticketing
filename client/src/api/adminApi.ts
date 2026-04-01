@@ -84,6 +84,11 @@ export const adminApi = {
     return response.data;
   },
 
+  issueTicket: async (data: { eventId: string, ticketId: string, attendeeName: string, attendeeEmail: string, image: string }) => {
+    const response = await api.post('/api/admin/tickets/issue', data);
+    return response.data;
+  },
+
   // ── Communications ──────────────────────────────────────────────
   broadcastEmail: async (data: { subject: string, message: string, recipientRole?: string }) => {
     const response = await api.post('/api/admin/broadcast', data);

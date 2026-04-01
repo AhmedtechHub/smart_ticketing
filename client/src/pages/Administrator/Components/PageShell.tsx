@@ -19,7 +19,7 @@ const PageShell = ({ title, description, icon: Icon, action, children }: PageShe
     className="space-y-6 font-sans"
   >
     {/* Page header */}
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between print:hidden">
       <div className="flex items-center gap-3">
         {Icon && (
           <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">

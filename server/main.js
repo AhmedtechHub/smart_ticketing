@@ -41,8 +41,8 @@ const limiter = rateLimit({
 app.use('/api/', limiter);
 
 app.use(morgan('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Serve static files
 app.use('/tickets', express.static(path.join(__dirname, 'public/tickets')));

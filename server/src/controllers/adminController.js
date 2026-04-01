@@ -190,6 +190,102 @@ const adminController = {
     }
   },
 
+  issueTicket: async (req, res) => {
+    try {
+      const { eventId, ticketId, attendeeName, attendeeEmail, image } = req.body;
+      
+      const event = await prisma.event.findUnique({ where: { id: eventId } });
+      const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+
+      if (!event || !ticket) return res.status(404).json({ error: "Record not found" });
+      if (ticket.quantity <= ticket.sold) {
+        return res.status(400).json({ error: "Ticket category is out of stock" });
+      }
+
+      // Check user, or create unverified attendee
+      let user = await prisma.user.findUnique({ where: { email: attendeeEmail } });
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email: attendeeEmail,
+            name: attendeeName,
+            role: 'ATTENDEE'
+          }
+        });
+      }
+
+      // Process image (base64)
+      const fs = require('fs');
+      const path = require('path');
+      const base64Data = image.replace(/^data:image\/png;base64,/, "");
+      const fileName = `ticket-${Date.now()}-${ticketId}.png`;
+      // Ensure 'uploads' directory is correct 
+      // The server is normally at server/ and uploads is likely at server/public/uploads
+      const uploadsDir = path.join(__dirname, '../../public/uploads');
+      if (!fs.existsSync(uploadsDir)) {
+          fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      const filePath = path.join(uploadsDir, fileName);
+      
+      fs.writeFileSync(filePath, base64Data, 'base64');
+      const qrCodeUrl = `/uploads/${fileName}`;
+
+      // Update catalog and create booking transaction
+      const booking = await prisma.$transaction(async (tx) => {
+        // deduct inventory (we increase sold, quantity represents total)
+        await tx.ticket.update({
+          where: { id: ticketId },
+          data: {
+            sold: { increment: 1 }
+          }
+        });
+
+        const reference = `SYS-GEN-${Date.now()}`;
+        return await tx.booking.create({
+          data: {
+            reference,
+            amount: ticket.price,
+            quantity: 1,
+            status: 'SUCCESSFUL',
+            gateway: 'OFFLINE_GENERATION',
+            qrCode: qrCodeUrl,
+            attendeeId: user.id,
+            eventId,
+            ticketId
+          }
+        });
+      });
+
+      // Send email (Graceful failure)
+      try {
+        await sendEmail({
+          to: attendeeEmail,
+          subject: `Your Ticket for ${event.title}`,
+          text: `Thank you for purchasing the ticket for ${event.title} with us.`,
+          html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
+                  <h2 style="color: #6d28d9;">Ticket Issued!</h2>
+                  <p>Thank you for purchasing the ticket for <strong>${event.title}</strong> with us.</p>
+                  <p>We've attached your digital ticket pass, or you can access it in the system.</p>
+                 </div>`,
+          attachments: [
+            {
+              filename: 'Ticket.png',
+              path: filePath
+            }
+          ]
+        });
+      } catch (mailErr) {
+        console.error("Delayed Email Dispatch Error:", mailErr.message);
+        // We don't throw here so the user still gets their success response since the DB/Catalog was updated.
+      }
+
+      res.status(200).json({ message: "Ticket issued successfully", booking });
+    } catch (error) {
+       console.error(error);
+       res.status(500).json({ error: error.message });
+    }
+  },
+
   getAnalytics: async (req, res) => {
     try {
       const totalUsers = await prisma.user.count();
@@ -240,7 +336,7 @@ const adminController = {
                   <h2 style="color: #6d28d9;">Internal Announcement</h2>
                   <p>${message}</p>
                 </div>`
-        })
+        }).catch(err => console.error(`Broadcast failed for ${user.email}:`, err.message))
       );
 
       await Promise.all(sendPromises);

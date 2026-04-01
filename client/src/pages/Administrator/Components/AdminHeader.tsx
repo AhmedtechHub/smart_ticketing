@@ -156,7 +156,7 @@ const AdminHeader = ({ collapsed: _collapsed, setCollapsed: _setCollapsed }: Hea
       <div className="flex items-center gap-1">
 
         {/* Messages badge */}
-        <TooltipProvider delayDuration={0}>
+        {/* <TooltipProvider delayDuration={0}>
           <Tooltip>
             <TooltipTrigger asChild>
               <Button onClick={() => navigate('/admin/messages')} variant="ghost" size="icon" className="relative h-9 w-9 rounded-lg text-muted-foreground hover:bg-accent hover:text-accent-foreground">
@@ -168,7 +168,7 @@ const AdminHeader = ({ collapsed: _collapsed, setCollapsed: _setCollapsed }: Hea
             </TooltipTrigger>
             <TooltipContent>Messages</TooltipContent>
           </Tooltip>
-        </TooltipProvider>
+        </TooltipProvider> */}
 
         {/* Notifications */}
         <NotificationBell />

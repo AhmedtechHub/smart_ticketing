@@ -26,20 +26,24 @@ const AdminLayout = () => {
   return (
     <div className="relative min-h-screen bg-background font-sans text-foreground">
       {/* Fixed Sidebar */}
-      <AdminSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      <div className="print:hidden">
+        <AdminSidebar collapsed={collapsed} setCollapsed={setCollapsed} />
+      </div>
 
       {/* Main content shifts with sidebar */}
       <motion.div
         initial={false}
         animate={{ marginLeft: sidebarWidth }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="flex min-h-screen flex-col"
+        className="flex min-h-screen flex-col print:!ml-0"
       >
         {/* Sticky Header */}
-        <AdminHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+        <div className="print:hidden">
+          <AdminHeader collapsed={collapsed} setCollapsed={setCollapsed} />
+        </div>
 
         {/* Page content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 print:p-0">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}

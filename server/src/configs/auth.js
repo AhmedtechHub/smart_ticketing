@@ -26,26 +26,34 @@ const auth = betterAuth({
     emailVerification: {
         sendOnSignUp: true,
         sendEmail: async ({ user, url, token }) => {
-            await sendEmail({
-                to: user.email,
-                subject: "Verify your email - Smart Ticketing",
-                title: "Security Verification",
-                htmlContent: `<p>Hello ${user.name || 'there'},</p><p>Please use the button below to verify your email address and secure your account.</p>`,
-                buttonText: "Verify Email",
-                buttonUrl: url,
-            });
+            try {
+                await sendEmail({
+                    to: user.email,
+                    subject: "Verify your email - Smart Ticketing",
+                    title: "Security Verification",
+                    htmlContent: `<p>Hello ${user.name || 'there'},</p><p>Please use the button below to verify your email address and secure your account.</p>`,
+                    buttonText: "Verify Email",
+                    buttonUrl: url,
+                });
+            } catch (err) {
+                console.error("Auth Verification Email Error:", err.message);
+            }
         },
     },
     forgetPassword: {
         sendEmail: async ({ user, url, token }) => {
-            await sendEmail({
-                to: user.email,
-                subject: "Reset your password - Smart Ticketing",
-                title: "Password Reset Request",
-                htmlContent: `<p>Hello ${user.name || 'there'},</p><p>You requested a password reset. Click the button below to choose a new password. If you didn't request this, you can safely ignore this email.</p>`,
-                buttonText: "Reset Password",
-                buttonUrl: url,
-            });
+            try {
+                await sendEmail({
+                    to: user.email,
+                    subject: "Reset your password - Smart Ticketing",
+                    title: "Password Reset Request",
+                    htmlContent: `<p>Hello ${user.name || 'there'},</p><p>You requested a password reset. Click the button below to choose a new password. If you didn't request this, you can safely ignore this email.</p>`,
+                    buttonText: "Reset Password",
+                    buttonUrl: url,
+                });
+            } catch (err) {
+                console.error("Auth Reset Password Email Error:", err.message);
+            }
         },
     },
     session: {
