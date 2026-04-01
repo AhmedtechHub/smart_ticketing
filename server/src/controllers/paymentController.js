@@ -29,19 +29,19 @@ const paymentController = {
 
   mpesaCallback: async (req, res) => {
     try {
-      console.log("Incoming M-Pesa Callback Body:", JSON.stringify(req.body, null, 2));
+      console.log("[DEBUG MPESA] Incoming Callback Body:", JSON.stringify(req.body, null, 2));
       const Body = req.body.Body || req.body;
       const { stkCallback } = Body;
       
       if (!stkCallback) {
-        console.error("Malformed M-Pesa Callback: stkCallback missing.");
+        console.error("[DEBUG MPESA] Malformed Callback: stkCallback missing.");
         return res.status(400).json({ ResultCode: 1, ResultDesc: "Missing stkCallback" });
       }
 
       const resultCode = stkCallback.ResultCode;
       const checkoutRequestId = stkCallback.CheckoutRequestID;
       
-      console.log(`Processing STK Callback: CheckoutID: ${checkoutRequestId}, ResultCode: ${resultCode}`);
+      console.log(`[DEBUG MPESA] ID: ${checkoutRequestId}, Result: ${resultCode}`);
         
       if (resultCode === 0) {
         const booking = await prisma.booking.findUnique({
@@ -49,18 +49,21 @@ const paymentController = {
         });
 
         if (booking) {
-          console.log(`M-Pesa Success: Finalizing booking ${booking.reference}`);
+          console.log(`[DEBUG MPESA] MATCH FOUND: Finalizing ${booking.reference}`);
           await bookingService.finalizeBooking(booking.reference);
         } else {
-          console.warn(`M-Pesa Success: No booking found for id ${checkoutRequestId}`);
+          console.warn(`[DEBUG MPESA] NO MATCH: CheckoutRequestID ${checkoutRequestId} not found in DB.`);
+          // list all pending bookings with checkoutRequestIds for debugging
+          const pending = await prisma.booking.findMany({ where: { status: 'PENDING' }, select: { checkoutRequestId: true, reference: true } });
+          console.log("[DEBUG MPESA] Currently Pending in DB:", pending);
         }
       } else {
-        console.warn(`M-Pesa STK Push Failed: ${stkCallback.ResultDesc}`);
+        console.warn(`[DEBUG MPESA] STK Push Failed by User/Safaricom: ${stkCallback.ResultDesc}`);
       }
 
       res.status(200).json({ ResultCode: 0, ResultDesc: "Success" });
     } catch (error) {
-      console.error('Mpesa Callback Error:', error);
+      console.error('[DEBUG MPESA] Callback Crash:', error);
       res.status(500).json({ ResultCode: 1, ResultDesc: "Internal Error" });
     }
   }
