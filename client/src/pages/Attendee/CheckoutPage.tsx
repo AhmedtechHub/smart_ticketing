@@ -107,7 +107,7 @@ const CheckoutPage = () => {
         let attempts = 0;
         const interval = setInterval(async () => {
             attempts++;
-            if (attempts > 30) { // 2 minutes approx
+            if (attempts > 60) { // 2 minutes (60 * 2s)
                 clearInterval(interval);
                 setIsProcessing(false);
                 setLoading(false);
@@ -121,12 +121,13 @@ const CheckoutPage = () => {
                     clearInterval(interval);
                     setIsProcessing(false);
                     setLoading(false);
-                    navigate("/checkout/success", { state: { booking } });
+                    setFinalTicket(booking);
+                    setIsTicketModalOpen(true);
                 }
             } catch (err) {
                 console.error("Polling error:", err);
             }
-        }, 4000);
+        }, 2000);
     };
 
     const total = (price || 0) * (quantity || 1);

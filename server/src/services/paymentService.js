@@ -16,13 +16,24 @@ const MPESA_SECRET = process.env.MPESA_CONSUMER_SECRET;
 const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE;
 const MPESA_BASE_URL = process.env.MPESA_BASE_URL;
 
+let cachedToken = null;
+let tokenExpiry = null;
+
 const getMpesaToken = async () => {
   try {
+    const now = new Date();
+    if (cachedToken && tokenExpiry && now < tokenExpiry) {
+        return cachedToken;
+    }
+
     const auth = Buffer.from(`${MPESA_KEY}:${MPESA_SECRET}`).toString('base64');
     const response = await axios.get(`${MPESA_BASE_URL}/oauth/v1/generate?grant_type=client_credentials`, {
       headers: { Authorization: `Basic ${auth}` },
     });
-    return response.data.access_token;
+
+    cachedToken = response.data.access_token;
+    tokenExpiry = new Date(now.getTime() + (Number(response.data.expires_in) * 1000) - 60000); // 1 minute buffer
+    return cachedToken;
   } catch (error) {
     console.error("M-Pesa Token Generation Error:", error.response?.data || error.message);
     throw error;
