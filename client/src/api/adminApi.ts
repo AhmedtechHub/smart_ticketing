@@ -93,5 +93,16 @@ export const adminApi = {
   broadcastEmail: async (data: { subject: string, message: string, recipientRole?: string }) => {
     const response = await api.post('/api/admin/broadcast', data);
     return response.data;
+  },
+
+  // ── Inquiries & Messages ─────────────────────────────────────────
+  getInquiries: async () => {
+    const response = await api.get('/api/admin/inquiries');
+    return response.data;
+  },
+
+  markInquiryRead: async (id: string) => {
+    const response = await api.patch(`/api/admin/inquiries/${id}/read`);
+    return response.data;
   }
 };

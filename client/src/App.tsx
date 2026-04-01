@@ -23,6 +23,7 @@ import TicketGeneratorPage from './pages/Administrator/Pages/TicketGeneratorPage
 import TicketGalleryPage from './pages/Administrator/Pages/TicketGalleryPage';
 import NotificationsPage from './pages/Administrator/Pages/NotificationsPage';
 import SettingsPage from './pages/Administrator/Pages/SettingsPage';
+import MessagesPage from './pages/Administrator/Pages/MessagesPage';
 import PlaceholderPage from './pages/Administrator/Pages/PlaceholderPage';
 import {
   UserPlus,
@@ -112,7 +113,7 @@ export function App() {
           {/* Communications */}
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="broadcast" element={<PlaceholderPage title="Broadcast Center" icon={Mail} />} />
-          <Route path="messages" element={<PlaceholderPage title="Messages" icon={MessageSquare} />} />
+          <Route path="messages" element={<MessagesPage />} />
 
           {/* Settings */}
           <Route path="settings" element={<SettingsPage />} />

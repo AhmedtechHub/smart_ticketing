@@ -116,6 +116,9 @@ const attendeeController = {
         return res.status(403).json({ message: 'Unauthorized view of this booking' });
       }
 
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
       res.status(200).json(booking);
     } catch (error) {
       res.status(500).json({ error: error.message });
@@ -164,6 +167,18 @@ const attendeeController = {
           </div>
         </div>
       `;
+
+      // Save to Database
+      await prisma.inquiry.create({
+        data: {
+          name,
+          email,
+          eventType,
+          eventDate: eventDate.toString(),
+          estimatedAttendance: parseInt(estimatedAttendance),
+          message
+        }
+      });
 
       await sendEmail({
         to: process.env.ADMIN_EMAIL,

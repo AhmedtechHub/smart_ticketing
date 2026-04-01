@@ -351,7 +351,30 @@ const adminController = {
     } catch (error) {
       res.status(500).json({ error: error.message });
     }
-  }
+  },
+  getInquiries: async (req, res) => {
+    try {
+      const inquiries = await prisma.inquiry.findMany({
+        orderBy: { createdAt: 'desc' }
+      });
+      res.json(inquiries);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+
+  markInquiryRead: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const inquiry = await prisma.inquiry.update({
+        where: { id },
+        data: { isRead: true }
+      });
+      res.json(inquiry);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
 };
 
 module.exports = adminController;

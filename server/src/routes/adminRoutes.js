@@ -30,6 +30,8 @@ router.post('/tickets', adminController.createTicket);
 router.post('/tickets/issue', adminController.issueTicket);
 
 // Communications
-router.post('/broadcast', adminController.broadcastEmail);
+// Inquiries
+router.get('/inquiries', adminController.getInquiries);
+router.patch('/inquiries/:id/read', adminController.markInquiryRead);
 
 module.exports = router;

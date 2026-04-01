@@ -29,11 +29,19 @@ const paymentController = {
 
   mpesaCallback: async (req, res) => {
     try {
-      console.log("Incoming M-Pesa Callback:", JSON.stringify(req.body, null, 2));
+      console.log("Incoming M-Pesa Callback Body:", JSON.stringify(req.body, null, 2));
       const Body = req.body.Body || req.body;
       const { stkCallback } = Body;
+      
+      if (!stkCallback) {
+        console.error("Malformed M-Pesa Callback: stkCallback missing.");
+        return res.status(400).json({ ResultCode: 1, ResultDesc: "Missing stkCallback" });
+      }
+
       const resultCode = stkCallback.ResultCode;
       const checkoutRequestId = stkCallback.CheckoutRequestID;
+      
+      console.log(`Processing STK Callback: CheckoutID: ${checkoutRequestId}, ResultCode: ${resultCode}`);
         
       if (resultCode === 0) {
         const booking = await prisma.booking.findUnique({
