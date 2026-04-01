@@ -153,7 +153,7 @@ const SuccessPage = () => {
                             <div className="space-y-1">
                                 <p className="text-xs font-bold text-foreground">Digital Fulfillment</p>
                                 <p className="text-[11px] font-medium text-muted-foreground leading-relaxed">
-                                    A copy of your ticket and receipt has been dispatched to <span className="text-primary font-bold">{booking.attendee.email}</span>. You can also download it right now using the button above.
+                                    A copy of your ticket and receipt has been dispatched to <span className="text-primary font-bold">{booking.attendee?.email || 'your email'}</span>. You can also download it right now using the button above.
                                 </p>
                             </div>
                         </div>

@@ -109,7 +109,7 @@ const attendeeController = {
     try {
       const booking = await prisma.booking.findUnique({
         where: { id: req.params.id },
-        include: { event: true, ticket: true }
+        include: { event: true, ticket: true, attendee: { select: { name: true, email: true } } }
       });
 
       if (!booking || (booking.attendeeId !== req.user.id && req.user.role !== 'ADMIN')) {
