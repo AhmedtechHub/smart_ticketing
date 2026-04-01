@@ -121,8 +121,7 @@ const CheckoutPage = () => {
                     clearInterval(interval);
                     setIsProcessing(false);
                     setLoading(false);
-                    setFinalTicket(booking);
-                    setIsTicketModalOpen(true);
+                    navigate("/checkout/success", { state: { booking } });
                 }
             } catch (err) {
                 console.error("Polling error:", err);
