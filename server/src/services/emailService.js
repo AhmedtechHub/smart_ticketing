@@ -23,8 +23,8 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async ({ 
   to, 
   subject, 
-  title, 
-  htmlContent, 
+  title = "Notification", 
+  htmlContent = "Please find the requested information below.", 
   buttonText, 
   buttonUrl, 
   attachments = [] 
@@ -33,7 +33,8 @@ const sendEmail = async ({
     const fullHtml = getEmailTemplate(title, htmlContent, buttonText, buttonUrl);
     
     const info = await transporter.sendMail({
-      from: `"Smart Events" <${process.env.ADMIN_EMAIL}>`,
+      from: `"Smart Events" <${process.env.EMAIL_USER}>`,
+      replyTo: process.env.ADMIN_EMAIL,
       to,
       subject,
       html: fullHtml,

@@ -260,23 +260,29 @@ const adminController = {
       try {
         await sendEmail({
           to: attendeeEmail,
-          subject: `Your Ticket for ${event.title}`,
-          text: `Thank you for purchasing the ticket for ${event.title} with us.`,
-          html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
-                  <h2 style="color: #6d28d9;">Ticket Issued!</h2>
-                  <p>Thank you for purchasing the ticket for <strong>${event.title}</strong> with us.</p>
-                  <p>We've attached your digital ticket pass, or you can access it in the system.</p>
-                 </div>`,
+          subject: `Digital Ticket: ${event.title}`,
+          title: "Your Ticket is Ready!",
+          htmlContent: `
+            <div style="font-family: sans-serif; padding: 10px; color: #333;">
+              <p>Hello <strong>${attendeeName}</strong>,</p>
+              <p>Your digital pass for <strong>${event.title}</strong> has been successfully generated and issued by the administration.</p>
+              <p>Please find your official ticket attached to this email. You can present this at the venue for scanning.</p>
+              <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #6d28d9;">
+                <p style="margin: 0; font-size: 14px;"><strong>Event:</strong> ${event.title}</p>
+                <p style="margin: 5px 0; font-size: 14px;"><strong>Location:</strong> ${event.location}</p>
+                <p style="margin: 0; font-size: 14px;"><strong>Tier:</strong> ${ticket.type}</p>
+              </div>
+              <p>We look forward to seeing you there!</p>
+            </div>`,
           attachments: [
             {
-              filename: 'Ticket.png',
+              filename: `Ticket_${event.title.replace(/\s+/g, '_')}.png`,
               path: filePath
             }
           ]
         });
       } catch (mailErr) {
         console.error("Delayed Email Dispatch Error:", mailErr.message);
-        // We don't throw here so the user still gets their success response since the DB/Catalog was updated.
       }
 
       res.status(200).json({ message: "Ticket issued successfully", booking });
@@ -331,9 +337,8 @@ const adminController = {
         sendEmail({
           to: user.email,
           subject,
-          text: message,
-          html: `<div style="font-family: sans-serif; padding: 20px; color: #333;">
-                  <h2 style="color: #6d28d9;">Internal Announcement</h2>
+          title: "Official Announcement",
+          htmlContent: `<div style="font-family: sans-serif; padding: 10px; color: #333;">
                   <p>${message}</p>
                 </div>`
         }).catch(err => console.error(`Broadcast failed for ${user.email}:`, err.message))
