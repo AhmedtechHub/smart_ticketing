@@ -168,6 +168,9 @@ const attendeeController = {
         </div>
       `;
 
+      // Diagnostic Log
+      console.log("[DIAGNOSTIC] Available Prisma Models:", Object.keys(prisma).filter(k => k[0] === k[0].toLowerCase() && !k.startsWith('$')));
+      
       // Save to Database
       await prisma.inquiry.create({
         data: {
