@@ -117,7 +117,7 @@ const ContactUs = () => {
               className="mt-4 flex justify-center lg:justify-start"
             >
               <img
-                src="https://res.cloudinary.com/dvkt0lsqb/image/upload/v1774345165/20260324_1238_Image_Generation_remix_01kmfkaqbgef6syxf5vwd0j6pe_rngxe2.png"
+                src="https://res.cloudinary.com/fffb5ery/image/upload/v1784293744/20260324_1238_Image_Generation_remix_01kmfkaqbgef6syxf5vwd0j6pe_rngxe2_kqgx5u.png"
                 alt="Contact Illustration"
                 className="w-64 sm:w-80 object-contain drop-shadow-2xl"
               />

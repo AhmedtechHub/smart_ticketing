@@ -10,7 +10,7 @@ const PERKS = [
 ];
 
 const IMAGE_URL =
-  "https://res.cloudinary.com/dvkt0lsqb/image/upload/v1774340332/pexels-luis-felipe-perez-817377805-19408256_fkldoi.jpg";
+  "https://res.cloudinary.com/fffb5ery/image/upload/v1784293439/pexels-luis-felipe-perez-817377805-19408256_kxb5sm.jpg";
 
 export default function PlannerCTA() {
   const navigate = useNavigate();

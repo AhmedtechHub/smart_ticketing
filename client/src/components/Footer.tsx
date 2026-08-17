@@ -16,7 +16,7 @@ const Footer = () => {
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 blur-xl group-hover:bg-primary/40 transition-all rounded-full" />
                 <img 
-                  src="https://res.cloudinary.com/dvkt0lsqb/image/upload/v1773771501/Smart_Ticketing_Logo_o9qzbh.png" 
+                  src="https://res.cloudinary.com/fffb5ery/image/upload/v1784291927/Smart_Ticketing_Logo_cw5utb.png" 
                   alt="Smart Ticketing" 
                   className="h-10 w-auto relative z-10 brightness-110 contrast-125"
                 />
